@@ -57,6 +57,10 @@ def _get_illumination_coefficient(matrix):
         value: coefficient.
 
     """
+    return _calculate_coefficient(matrix)
+
+
+def _calculate_coefficient(matrix):
     return 35
 
 
