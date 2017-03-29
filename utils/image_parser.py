@@ -68,7 +68,8 @@ def _get_maximum_brightness(matrix):
         for col in xrange(len(matrix[row])):
             if maximum < matrix[row][col]:
                 maximum =  matrix[row][col]
-    print maximum
+    if maximum < 35:
+        return 255
     return maximum
 
 
@@ -82,7 +83,8 @@ def _get_denoise_matrix(matrix, maximum):
             if matrix[row][col] < (maximum / (e ** 2)):
                 count += 1
                 average_background_brightness += matrix[row][col]
-    average_background_brightness /= count
+    if count > 0:
+        average_background_brightness /= count
     for row in xrange(len(matrix)):
         for col in xrange(len(matrix[row])):
             matrix[row][col] -= average_background_brightness
