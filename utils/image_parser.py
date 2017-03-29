@@ -2,8 +2,7 @@ from PIL import Image
 import numpy
 import json
 import os
-
-
+from math import e
 VISITED = -999
 
 
@@ -21,9 +20,11 @@ def image_parser(file_path):
 
     """
     matrix = _get_gray_scale_bitmap_from_image(file_path)
-    coefficient = _get_illumination_coefficient(matrix)
-
-    stars = _get_objects_from_matrix_with_coefficient(matrix, coefficient)
+    maximum = _get_maximum_brightness(matrix)
+    denoise_matrix = _get_denoise_matrix(matrix, maximum)
+    maximum = _get_maximum_brightness(denoise_matrix)
+    coefficient = _get_illumination_coefficient(maximum)
+    stars = _get_objects_from_matrix_with_coefficient(denoise_matrix, coefficient)
 
     return stars
 
@@ -48,7 +49,7 @@ def _get_gray_scale_bitmap_from_image(file_path):
     return matrix.tolist()
 
 
-def _get_illumination_coefficient(matrix):
+def _get_illumination_coefficient(maximum):
     """Get Illumination Coefficient
 
     Function that normalize matrix with values that describe objects.
@@ -57,11 +58,35 @@ def _get_illumination_coefficient(matrix):
         value: coefficient.
 
     """
-    return _calculate_coefficient(matrix)
+    return maximum / 8
+
+def _get_maximum_brightness(matrix):
+    """
+    """
+    maximum = 0
+    for row in xrange(len(matrix)):
+        for col in xrange(len(matrix[row])):
+            if maximum < matrix[row][col]:
+                maximum =  matrix[row][col]
+    print maximum
+    return maximum
 
 
-def _calculate_coefficient(matrix):
-    return 35
+def _get_denoise_matrix(matrix, maximum):
+    """
+    """
+    count = 0
+    average_background_brightness = 0
+    for row in xrange(len(matrix)):
+        for col in xrange(len(matrix[row])):
+            if matrix[row][col] < (maximum / (e ** 2)):
+                count += 1
+                average_background_brightness += matrix[row][col]
+    average_background_brightness /= count
+    for row in xrange(len(matrix)):
+        for col in xrange(len(matrix[row])):
+            matrix[row][col] -= average_background_brightness
+    return matrix
 
 
 def _get_objects_from_matrix_with_coefficient(matrix, coefficient):
